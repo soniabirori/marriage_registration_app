@@ -1,0 +1,78 @@
+﻿@page "/marriages/create"
+@using MarriageRegistrationApp.Data
+@using Microsoft.EntityFrameworkCore
+@using MarriageRegistrationApp.Models
+@inject IDbContextFactory<MarriageRegistrationApp.Data.MarriageRegistrationAppContext> DbFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Register Marriage</PageTitle>
+
+<div class="container mt-4">
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Register New Marriage</h5>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@Marriage" OnValidSubmit="AddMarriage" FormName="create" FormModel="@Marriage">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+
+                <div class="mb-3">
+                    <label for="partnerone" class="form-label">Partner One</label>
+                    <InputText id="partnerone" @bind-Value="Marriage.PartnerOne" class="form-control" />
+                    <ValidationMessage For="() => Marriage.PartnerOne" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="partnertwo" class="form-label">Partner Two</label>
+                    <InputText id="partnertwo" @bind-Value="Marriage.PartnerTwo" class="form-control" />
+                    <ValidationMessage For="() => Marriage.PartnerTwo" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="marriagedate" class="form-label">Marriage Date</label>
+                    <InputDate id="marriagedate" @bind-Value="Marriage.MarriageDate" class="form-control" />
+                    <ValidationMessage For="() => Marriage.MarriageDate" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <InputText id="status" @bind-Value="Marriage.Status" class="form-control" />
+                    <ValidationMessage For="() => Marriage.Status" class="text-danger" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Register New Marriage</button>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="text-end">
+        <NavLink class="btn btn-outline-secondary" href="/marriages">Back to Records</NavLink>
+    </div>
+</div>
+
+@code {
+    private MarriageRegistrationAppContext context = default!;
+    private Marriage Marriage = new Marriage
+    {
+        PartnerOne = string.Empty,
+        PartnerTwo = string.Empty,
+        Status = string.Empty,
+        MarriageDate = DateTime.Today
+    };
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    private async Task AddMarriage()
+    {
+        context.Marriage.Add(Marriage);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/marriages");
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

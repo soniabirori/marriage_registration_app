@@ -1,0 +1,45 @@
+﻿@page "/marriages"
+@using MarriageRegistrationApp.Data
+@using MarriageRegistrationApp.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<MarriageRegistrationApp.Data.MarriageRegistrationAppContext> DbFactory
+
+<PageTitle>Marriage Records</PageTitle>
+
+<div class="container mb-5">
+    <div class="text-end mb-3">
+        <NavLink class="btn btn-primary" href="/marriages/create">Register New Marriage</NavLink>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Marriage Records</h5>
+        </div>
+        <div class="card-body">
+            <QuickGrid Class="table" Items="context.Marriage">
+                <PropertyColumn Property="m => m.PartnerOne" Title="Groom" />
+                <PropertyColumn Property="m => m.PartnerTwo" Title="Bride" />
+                <PropertyColumn Property="m => m.MarriageDate" Format="MM/dd/yyyy" />
+                <PropertyColumn Property="m => m.Status" />
+
+                <TemplateColumn Context="m">
+                    <a href="@($"marriages/edit?id={m.Id}")">Edit</a> |
+                    <a href="@($"marriages/details?id={m.Id}")">Details</a> |
+                    <a href="@($"marriages/delete?id={m.Id}")">Delete</a>
+                </TemplateColumn>
+            </QuickGrid>
+        </div>
+    </div>
+</div>
+
+@code {
+    private MarriageRegistrationAppContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

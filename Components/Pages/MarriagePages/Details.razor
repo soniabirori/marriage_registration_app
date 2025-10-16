@@ -1,0 +1,52 @@
+﻿@page "/marriages/details"
+@using Microsoft.EntityFrameworkCore
+@using MarriageRegistrationApp.Models
+@inject IDbContextFactory<MarriageRegistrationApp.Data.MarriageRegistrationAppContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Marriage</h2>
+    <hr />
+    @if (marriage is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">PartnerOne</dt>
+            <dd class="col-sm-10">@marriage.PartnerOne</dd>
+            <dt class="col-sm-2">PartnerTwo</dt>
+            <dd class="col-sm-10">@marriage.PartnerTwo</dd>
+            <dt class="col-sm-2">MarriageDate</dt>
+            <dd class="col-sm-10">@marriage.MarriageDate</dd>
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">@marriage.Status</dd>
+        </dl>
+        <div>
+            <a href="@($"/marriages/edit?id={marriage.Id}")">Edit</a> |
+            <a href="@($"/marriages")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Marriage? marriage;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        marriage = await context.Marriage.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (marriage is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

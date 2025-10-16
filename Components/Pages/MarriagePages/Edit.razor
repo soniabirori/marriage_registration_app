@@ -1,0 +1,104 @@
+﻿@page "/marriages/edit"
+@using Microsoft.EntityFrameworkCore
+@using MarriageRegistrationApp.Models
+@inject IDbContextFactory<MarriageRegistrationApp.Data.MarriageRegistrationAppContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Marriage</h2>
+<hr />
+@if (Marriage is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Marriage" OnValidSubmit="UpdateMarriage" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Marriage.Id" value="@Marriage.Id" />
+                <div class="mb-3">
+                    <label for="partnerone" class="form-label">PartnerOne:</label>
+                    <InputText id="partnerone" @bind-Value="Marriage.PartnerOne" class="form-control" />
+                    <ValidationMessage For="() => Marriage.PartnerOne" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="partnertwo" class="form-label">PartnerTwo:</label>
+                    <InputText id="partnertwo" @bind-Value="Marriage.PartnerTwo" class="form-control" />
+                    <ValidationMessage For="() => Marriage.PartnerTwo" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="marriagedate" class="form-label">MarriageDate:</label>
+                    <InputDate id="marriagedate" @bind-Value="Marriage.MarriageDate" class="form-control" />
+                    <ValidationMessage For="() => Marriage.MarriageDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status:</label>
+                    <InputText id="status" @bind-Value="Marriage.Status" class="form-control" />
+                    <ValidationMessage For="() => Marriage.Status" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/marriages">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Marriage? Marriage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Marriage ??= await context.Marriage.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Marriage is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateMarriage()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Marriage!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!MarriageExists(Marriage!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/marriages");
+    }
+
+    private bool MarriageExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Marriage.Any(e => e.Id == id);
+    }
+}
